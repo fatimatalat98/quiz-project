@@ -158,6 +158,17 @@ let quizFinished = false;
 
 
 /* ==========================================
+   ANTI-CHEAT VARIABLES
+========================================== */
+
+const MAX_VIOLATIONS = 2;
+
+let violationCount = 0;
+
+let antiCheatViolations = [];
+
+
+/* ==========================================
    ELEMENTS
 ========================================== */
 
@@ -216,12 +227,16 @@ startBtn.addEventListener("click", function () {
     studentName =
         studentNameInput.value.trim();
 
+
     if (studentName === "") {
 
         alert("Please enter your name.");
 
         return;
     }
+
+
+    /* Reset quiz */
 
     currentQuestionIndex = 0;
 
@@ -234,20 +249,45 @@ startBtn.addEventListener("click", function () {
 
     quizFinished = false;
 
+
+    /* Reset anti-cheat */
+
+    violationCount = 0;
+
+    antiCheatViolations = [];
+
+
+    /* Reset timer */
+
     timerElement.style.color = "#2563eb";
 
     timerElement.style.background = "#eff6ff";
+
+
+    /* Change screens */
 
     startScreen.classList.add("hidden");
 
     quizScreen.classList.remove("hidden");
 
+
+    /* Total questions */
+
     totalQuestionsElement.textContent =
         questions.length;
 
+
+    /* Question navigation */
+
     createQuestionNumbers();
 
+
+    /* First question */
+
     loadQuestion();
+
+
+    /* Start timer */
 
     startTimer();
 
@@ -264,19 +304,25 @@ function loadQuestion() {
         return;
     }
 
+
     const question =
         questions[currentQuestionIndex];
+
 
     currentQuestionElement.textContent =
         currentQuestionIndex + 1;
 
+
     questionBadge.textContent =
         `Question ${currentQuestionIndex + 1}`;
+
 
     questionText.textContent =
         question.question;
 
+
     optionsContainer.innerHTML = "";
+
 
     question.options.forEach(
         (option, index) => {
@@ -284,7 +330,9 @@ function loadQuestion() {
             const label =
                 document.createElement("label");
 
+
             label.classList.add("option");
+
 
             if (
                 userAnswers[currentQuestionIndex]
@@ -294,6 +342,7 @@ function loadQuestion() {
                 label.classList.add("selected");
 
             }
+
 
             label.innerHTML = `
 
@@ -307,10 +356,12 @@ function loadQuestion() {
 
             `;
 
+
             const radio =
                 label.querySelector(
                     'input[type="radio"]'
                 );
+
 
             if (
                 userAnswers[currentQuestionIndex]
@@ -321,13 +372,16 @@ function loadQuestion() {
 
             }
 
+
             const optionLabel =
                 label.querySelector(
                     ".option-label"
                 );
 
+
             optionLabel.textContent =
                 option;
+
 
             label.addEventListener(
                 "click",
@@ -342,12 +396,14 @@ function loadQuestion() {
                 }
             );
 
+
             optionsContainer.appendChild(
                 label
             );
 
         }
     );
+
 
     updateNavigation();
 
@@ -368,8 +424,10 @@ function selectAnswer(answerIndex) {
         return;
     }
 
+
     userAnswers[currentQuestionIndex] =
         answerIndex;
+
 
     loadQuestion();
 
@@ -388,6 +446,7 @@ nextBtn.addEventListener(
             return;
         }
 
+
         if (
             userAnswers[currentQuestionIndex]
             === null
@@ -399,6 +458,7 @@ nextBtn.addEventListener(
 
             return;
         }
+
 
         if (
             currentQuestionIndex
@@ -433,6 +493,7 @@ previousBtn.addEventListener(
             return;
         }
 
+
         if (
             currentQuestionIndex > 0
         ) {
@@ -462,8 +523,10 @@ function updateNavigation() {
         return;
     }
 
+
     previousBtn.disabled =
         currentQuestionIndex === 0;
+
 
     if (
         currentQuestionIndex
@@ -497,6 +560,7 @@ function updateProgress() {
             / questions.length
         ) * 100;
 
+
     progressBar.style.width =
         `${progress}%`;
 
@@ -511,18 +575,22 @@ function createQuestionNumbers() {
 
     questionNumbers.innerHTML = "";
 
+
     questions.forEach(
         (_, index) => {
 
             const button =
                 document.createElement("button");
 
+
             button.classList.add(
                 "question-number"
             );
 
+
             button.textContent =
                 index + 1;
+
 
             button.addEventListener(
                 "click",
@@ -532,13 +600,16 @@ function createQuestionNumbers() {
                         return;
                     }
 
+
                     currentQuestionIndex =
                         index;
+
 
                     loadQuestion();
 
                 }
             );
+
 
             questionNumbers.appendChild(
                 button
@@ -561,6 +632,7 @@ function updateQuestionNumbers() {
             ".question-number"
         );
 
+
     buttons.forEach(
         (button, index) => {
 
@@ -568,6 +640,7 @@ function updateQuestionNumbers() {
                 "current",
                 "answered"
             );
+
 
             if (
                 index === currentQuestionIndex
@@ -590,6 +663,7 @@ function updateQuestionNumbers() {
 
             }
 
+
             button.disabled =
                 quizFinished;
 
@@ -609,7 +683,9 @@ function startTimer() {
         timerInterval
     );
 
+
     updateTimerDisplay();
+
 
     timerInterval =
         setInterval(
@@ -624,9 +700,12 @@ function startTimer() {
                     return;
                 }
 
+
                 timeRemaining--;
 
+
                 updateTimerDisplay();
+
 
                 if (
                     timeRemaining <= 0
@@ -635,6 +714,7 @@ function startTimer() {
                     clearInterval(
                         timerInterval
                     );
+
 
                     submitQuiz("time");
 
@@ -658,11 +738,14 @@ function updateTimerDisplay() {
             timeRemaining / 60
         );
 
+
     const seconds =
         timeRemaining % 60;
 
+
     timerElement.textContent =
         `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
 
     if (
         timeRemaining <= 30
@@ -679,9 +762,9 @@ function updateTimerDisplay() {
 }
 
 
-/* ==========================================
-   SUBMIT QUIZ
-========================================== */
+/* =====================================================
+                    SUBMIT QUIZ
+===================================================== */
 
 function submitQuiz(reason) {
 
@@ -689,20 +772,23 @@ function submitQuiz(reason) {
         return;
     }
 
+
     quizFinished = true;
 
     quizStarted = false;
+
 
     clearInterval(
         timerInterval
     );
 
 
-    /* ---------------------------------------
+    /* ==========================================
        CALCULATE SCORE
-    ---------------------------------------- */
+    ========================================== */
 
     let score = 0;
+
 
     questions.forEach(
         (question, index) => {
@@ -720,9 +806,9 @@ function submitQuiz(reason) {
     );
 
 
-    /* ---------------------------------------
+    /* ==========================================
        SAVE RESULT
-    ---------------------------------------- */
+    ========================================== */
 
     saveResult(
         reason,
@@ -730,9 +816,7 @@ function submitQuiz(reason) {
     );
 
 
-    /* ---------------------------------------
-       DISABLE NAVIGATION
-    ---------------------------------------- */
+    /* Disable navigation */
 
     previousBtn.disabled = true;
 
@@ -744,6 +828,7 @@ function submitQuiz(reason) {
             ".question-number"
         );
 
+
     buttons.forEach(
         function (button) {
 
@@ -753,10 +838,13 @@ function submitQuiz(reason) {
     );
 
 
+    /* Disable answers */
+
     const answerInputs =
         document.querySelectorAll(
             'input[name="answer"]'
         );
+
 
     answerInputs.forEach(
         function (input) {
@@ -767,13 +855,12 @@ function submitQuiz(reason) {
     );
 
 
-    /* ---------------------------------------
-       SHOW SUBMITTED SCREEN
-    ---------------------------------------- */
+    /* Show submitted screen */
 
     quizScreen.classList.add(
         "hidden"
     );
+
 
     submittedScreen.classList.remove(
         "hidden"
@@ -782,9 +869,9 @@ function submitQuiz(reason) {
 }
 
 
-/* ==========================================
-   SAVE RESULT
-========================================== */
+/* =====================================================
+                    SAVE RESULT
+===================================================== */
 
 function saveResult(
     reason,
@@ -817,7 +904,28 @@ function saveResult(
             reason,
 
         submittedAt:
-            new Date().toLocaleString()
+            new Date().toLocaleString(),
+
+
+        /* ==========================================
+           ANTI-CHEAT RESULT
+        ========================================== */
+
+        antiCheat: {
+
+            violationCount:
+                violationCount,
+
+            violations:
+                antiCheatViolations,
+
+            flagged:
+                violationCount > 0,
+
+            autoSubmitted:
+                violationCount >= MAX_VIOLATIONS
+
+        }
 
     };
 
@@ -835,3 +943,449 @@ function saveResult(
     );
 
 }
+
+
+/* =====================================================
+                  ANTI-CHEAT SYSTEM
+===================================================== */
+
+
+/* ==========================================
+   RECORD VIOLATION
+========================================== */
+
+function recordAntiCheatViolation(reason) {
+
+    /*
+       Anti-cheat sirf quiz ke waqt chalega.
+    */
+
+    if (
+        !quizStarted ||
+        quizFinished
+    ) {
+
+        return;
+
+    }
+
+
+    violationCount++;
+
+
+    const violation = {
+
+        reason:
+            reason,
+
+        count:
+            violationCount,
+
+        time:
+            new Date().toISOString()
+
+    };
+
+
+    antiCheatViolations.push(
+        violation
+    );
+
+
+    console.warn(
+        "ANTI-CHEAT VIOLATION:",
+        violation
+    );
+
+
+    /*
+       Maximum violations
+    */
+
+    if (
+        violationCount >= MAX_VIOLATIONS
+    ) {
+
+        alert(
+            "Maximum cheating violations reached.\n\n" +
+            "Your quiz will be submitted."
+        );
+
+
+        submitQuiz(
+            "anti-cheat"
+        );
+
+
+        return;
+
+    }
+
+
+    /*
+       Warning
+    */
+
+    alert(
+        "Warning!\n\n" +
+        reason +
+        "\n\n" +
+        "Violation " +
+        violationCount +
+        " of " +
+        MAX_VIOLATIONS
+    );
+
+}
+
+
+/* ==========================================
+   TAB SWITCH DETECTION
+========================================== */
+
+document.addEventListener(
+    "visibilitychange",
+    function () {
+
+        if (
+            quizStarted &&
+            !quizFinished &&
+            document.hidden
+        ) {
+
+            recordAntiCheatViolation(
+                "You switched to another tab or left the quiz."
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   WINDOW FOCUS DETECTION
+========================================== */
+
+window.addEventListener(
+    "blur",
+    function () {
+
+        if (
+            quizStarted &&
+            !quizFinished
+        ) {
+
+            recordAntiCheatViolation(
+                "Quiz window lost focus."
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   COPY PROTECTION
+========================================== */
+
+document.addEventListener(
+    "copy",
+    function (event) {
+
+        if (
+            quizStarted &&
+            !quizFinished
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Copying is not allowed during the quiz."
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   CUT PROTECTION
+========================================== */
+
+document.addEventListener(
+    "cut",
+    function (event) {
+
+        if (
+            quizStarted &&
+            !quizFinished
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Cutting is not allowed during the quiz."
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   PASTE PROTECTION
+========================================== */
+
+document.addEventListener(
+    "paste",
+    function (event) {
+
+        if (
+            quizStarted &&
+            !quizFinished
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Pasting is not allowed during the quiz."
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   RIGHT CLICK PROTECTION
+========================================== */
+
+document.addEventListener(
+    "contextmenu",
+    function (event) {
+
+        if (
+            quizStarted &&
+            !quizFinished
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Right-click is not allowed during the quiz."
+            );
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   TEXT SELECTION PROTECTION
+========================================== */
+
+document.addEventListener(
+    "selectstart",
+    function (event) {
+
+        if (
+            quizStarted &&
+            !quizFinished
+        ) {
+
+            event.preventDefault();
+
+        }
+
+    }
+);
+
+
+/* ==========================================
+   KEYBOARD PROTECTION
+========================================== */
+
+document.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (
+            !quizStarted ||
+            quizFinished
+        ) {
+
+            return;
+
+        }
+
+
+        const key =
+            event.key.toLowerCase();
+
+
+        /* ==========================================
+           CTRL + C
+        ========================================== */
+
+        if (
+            event.ctrlKey &&
+            key === "c"
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Copy shortcut detected."
+            );
+
+
+            return;
+
+        }
+
+
+        /* ==========================================
+           CTRL + V
+        ========================================== */
+
+        if (
+            event.ctrlKey &&
+            key === "v"
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Paste shortcut detected."
+            );
+
+
+            return;
+
+        }
+
+
+        /* ==========================================
+           CTRL + X
+        ========================================== */
+
+        if (
+            event.ctrlKey &&
+            key === "x"
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Cut shortcut detected."
+            );
+
+
+            return;
+
+        }
+
+
+        /* ==========================================
+           CTRL + U
+        ========================================== */
+
+        if (
+            event.ctrlKey &&
+            key === "u"
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "View-source shortcut detected."
+            );
+
+
+            return;
+
+        }
+
+
+        /* ==========================================
+           F12
+        ========================================== */
+
+        if (
+            event.key === "F12"
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Developer tools shortcut detected."
+            );
+
+
+            return;
+
+        }
+
+
+        /* ==========================================
+           CTRL + SHIFT + I
+        ========================================== */
+
+        if (
+            event.ctrlKey &&
+            event.shiftKey &&
+            key === "i"
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Developer tools shortcut detected."
+            );
+
+
+            return;
+
+        }
+
+
+        /* ==========================================
+           CTRL + SHIFT + J
+        ========================================== */
+
+        if (
+            event.ctrlKey &&
+            event.shiftKey &&
+            key === "j"
+        ) {
+
+            event.preventDefault();
+
+
+            recordAntiCheatViolation(
+                "Developer console shortcut detected."
+            );
+
+
+            return;
+
+        }
+
+    }
+);
